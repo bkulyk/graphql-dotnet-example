@@ -8,6 +8,7 @@ using GraphQL.Http;
 using GraphQL.Types;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace test
 {
@@ -43,13 +44,21 @@ namespace test
 
         private bool IsGraphQLRequest(HttpContext context)
         {
-            return context.Request.Path.StartsWithSegments(_settings.Path)
-                && string.Equals(context.Request.Method, "POST", StringComparison.OrdinalIgnoreCase);
+            return context.Request.Path.StartsWithSegments(_settings.Path);
+                //&& string.Equals(context.Request.Method, "POST", StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task ExecuteAsync(HttpContext context, ISchema schema)
         {
-            var request = Deserialize<GraphQLRequest>(context.Request.Body);
+            GraphQLRequest request;
+            if (string.Equals(context.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+            {
+                request = Deserialize<GraphQLRequest>(context.Request.Body);
+            }
+            else
+            {
+                request = DeserializeGet(context.Request.Query);
+            }
 
             var result = await _executer.ExecuteAsync(_ =>
             {
@@ -81,6 +90,24 @@ namespace test
                 var ser = new JsonSerializer();
                 return ser.Deserialize<T>(jsonReader);
             }
+        }
+
+        public static GraphQLRequest DeserializeGet(IQueryCollection query) 
+        {
+            GraphQLRequest r = new GraphQLRequest();
+            r.OperationName = query["OperationName"].ToString();
+            r.Query = query["Query"].ToString();
+            if (query.ContainsKey("Variables"))
+            {
+                try
+                {
+                    r.Variables = JObject.Parse(query["Variables"]);
+                }
+                catch (JsonReaderException)
+                { 
+                }
+            }
+            return r;
         }
     }
 }

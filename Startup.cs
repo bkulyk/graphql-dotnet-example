@@ -9,6 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using System.Net.Http;
+
 using GraphQL;
 using GraphQL.Http;
 using GraphQL.Types;
@@ -27,14 +29,10 @@ namespace test
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            ISchema schema = Schema.For(@"
-            type Query {
-                hello: String
-            }");
-
             services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
             services.AddSingleton<IDocumentWriter, DocumentWriter>();
-            services.AddSingleton<ISchema>(schema);
+            services.AddSingleton<ISchema>(TestSchema.GetSchema());
+            services.AddSingleton<HttpClient, HttpClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,6 +50,9 @@ namespace test
                     User = ctx.User
                 }
             });
+
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
         }
     }
 }

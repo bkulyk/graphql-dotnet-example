@@ -6,11 +6,17 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\graphiql\" />
+    <Folder Include="Schema\" />
+    <Folder Include="Resolvers\" />
+    <Folder Include="Requests\" />
+    <Folder Include="Models\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Runtime.Serialization.Json" Version="4.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
-    <PackageReference Include="GraphQL" Version="2.0.0-alpha-851" />
+    <PackageReference Include="GraphQL" Version="2.0.0-alpha-863" />
   </ItemGroup>
 
   <ItemGroup>
