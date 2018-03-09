@@ -4,7 +4,9 @@
 
 type Query {
 #  all_films: [Film]
-  film: Film
+  film(
+    id: ID!
+  ): Film
 }
 
 # A single film.

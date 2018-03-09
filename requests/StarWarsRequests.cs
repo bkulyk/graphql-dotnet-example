@@ -13,27 +13,25 @@ namespace test.Requests
     {
         private HttpClient client;
 
-        public StarWarsRequest() {
-            client = new HttpClient();
+        public StarWarsRequest(HttpClient _client) {
+            client = _client;
         }
 
         private async Task<string> getUrl(string url) {
-            
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Add("User-Agent", "graphql.net");
             string res = await client.GetStringAsync(url);
             return res;
         }
 
-        public async Task<Film> GetFilm ()
+        public async Task<Film> GetFilm (string id)
         {
-            string res = await getUrl("https://swapi.co/api/films/1/");
+            string res = await getUrl($"https://swapi.co/api/films/{id}/");
             return JsonConvert.DeserializeObject<Film>(res);
         }
 
         public async Task<Person> GetPerson (string id) {
-            var url = $"https://swapi.co/api/people/{id}/";
-            return await GetPersonWithUrl(url);
+            return await GetPersonWithUrl($"https://swapi.co/api/people/{id}/");
         }
 
         public async Task<Person> GetPersonWithUrl(string url)

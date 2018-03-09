@@ -10,13 +10,12 @@ namespace test.Resolvers
 {   
     public class Film
     {
-
         public async Task<Models.Person[]> Characters(ResolveFieldContext context)
         {
             Models.Film film = (context.Source as Models.Film);
             List<string> chars = new List<string>(film.Characters).ToList();
 
-            StarWarsRequest r = new StarWarsRequest();
+            var r = new StarWarsRequest(new System.Net.Http.HttpClient());
             return await r.GetPeople(chars);
         }
 

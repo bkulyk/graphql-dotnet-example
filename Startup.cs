@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using test.Requests;
 
 using System.Net.Http;
 
@@ -32,6 +33,7 @@ namespace test
             services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
             services.AddSingleton<IDocumentWriter, DocumentWriter>();
             services.AddSingleton<ISchema>(TestSchema.GetSchema());
+            services.AddSingleton<StarWarsRequest, StarWarsRequest>();
             services.AddSingleton<HttpClient, HttpClient>();
         }
 
