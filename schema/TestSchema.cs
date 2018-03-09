@@ -1,22 +1,13 @@
 ﻿using GraphQL;
 using GraphQL.Types;
 
-namespace test
+namespace GraphQL.StarWars
 {
-    public class TestSchema
+    public class StarWarsSchema : Schema
     {
-        static private string readSchemaFile()
+        public StarWarsSchema(IDependencyResolver resolver)
         {
-            return string.Join("\n", System.IO.File.ReadAllLines("./schema/schema.graphql"));
-        }
-
-        static public ISchema GetSchema()
-        {
-            return Schema.For(readSchemaFile(), _ => {
-                _.Types.Include<Resolvers.Query>();
-                _.Types.Include<Resolvers.Film>();
-                _.Types.Include<Resolvers.Person>();
-            });
+            Query = resolver.Resolve<StarWarsQuery>();
         }
     }
 }

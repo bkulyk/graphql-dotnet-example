@@ -15,6 +15,7 @@ using System.Net.Http;
 using GraphQL;
 using GraphQL.Http;
 using GraphQL.Types;
+using GraphQL.StarWars;
 
 namespace test
 {
@@ -30,9 +31,10 @@ namespace test
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IDependencyResolver, DefaultDependencyResolver>();
             services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
             services.AddSingleton<IDocumentWriter, DocumentWriter>();
-            services.AddSingleton<ISchema>(TestSchema.GetSchema());
+            services.AddSingleton<ISchema, StarWarsSchema>();
             services.AddSingleton<StarWarsRequest, StarWarsRequest>();
             services.AddSingleton<HttpClient, HttpClient>();
         }

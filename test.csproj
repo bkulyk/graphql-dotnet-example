@@ -7,10 +7,8 @@
   <ItemGroup>
     <Folder Include="wwwroot\" />
     <Folder Include="wwwroot\graphiql\" />
-    <Folder Include="Schema\" />
-    <Folder Include="Resolvers\" />
-    <Folder Include="Requests\" />
     <Folder Include="Models\" />
+    <Folder Include="Types\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,5 +23,8 @@
 
   <ItemGroup>
     <Compile Remove="BookRepository.cs" />
+    <Compile Remove="Resolvers\Film.cs" />
+    <Compile Remove="Resolvers\Person.cs" />
+    <Compile Remove="Resolvers\Query.cs" />
   </ItemGroup>
 </Project>
