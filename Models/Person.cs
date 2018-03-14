@@ -34,5 +34,7 @@ namespace test.Models
 
         [JsonProperty(PropertyName = "birth_year")]
         public string BirthYear { get; set; }
+
+        public string Url { get; set; }
     }
 }

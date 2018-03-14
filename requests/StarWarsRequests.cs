@@ -24,13 +24,13 @@ namespace test.Requests
             return res;
         }
 
-        public async Task<Film> GetFilm (string id)
+        public async Task<Film> GetFilm(string id)
         {
             string res = await getUrl($"https://swapi.co/api/films/{id}/");
             return JsonConvert.DeserializeObject<Film>(res);
         }
 
-        public async Task<Person> GetPerson (string id) {
+        public async Task<Person> GetPerson(string id) {
             return await GetPersonWithUrl($"https://swapi.co/api/people/{id}/");
         }
 
@@ -40,11 +40,29 @@ namespace test.Requests
             return JsonConvert.DeserializeObject<Person>(res);
         }
 
-        public async Task<Person[]> GetPeople (List<string> urls) {
+        public async Task<IEnumerable<Person>> GetPeople(IEnumerable<string> urls)
+        {
             var tasks = urls.Select(x => GetPersonWithUrl(x));
             await Task.WhenAll(tasks).ContinueWith(x => x);
-            var peeps = tasks.Select(x => x.Result);
-            return peeps.ToArray();
+            return tasks.Select(x => x.Result);
+        }
+
+        public async Task<Dictionary<Tid, T>> GetIndex<Tid, T>(string type)
+        {
+            System.Console.WriteLine("hi I'm here");
+            string res = await getUrl($"https://swapi.co/api/{type}/");
+            var data = JObject.Parse(res);
+
+            System.Console.WriteLine(data["count"]);
+
+
+
+            return null;
+        }
+
+        public async Task<Dictionary<string, Person>> GetPeopleIndex()
+        {
+            return await GetIndex<string, Person>("people");
         }
     }
 }
