@@ -33,33 +33,34 @@ namespace GraphQL.Types
 
             Field(d => d.ReleaseDate, nullable: true).Description("Release date of the film");
 
-            Field<ListGraphType<PersonType>, List<Person>>().Name("characters").Resolve((context) => {
+            Field<ListGraphType<PersonType>, List<Person>>().Name("characters").ResolveAsync(async (context) => {
                 var bag = new ConcurrentBag<Person>();
+                var people = await r.GetPeopleIndex();
 
                 // Run within an async context to make sure we won't deadlock
                 AsyncContext.Run(async () =>
                 {
                     var loader = new BatchDataLoader<string, Person>(async (urls, ct) =>
                     {
-                        Console.WriteLine(urls);
-                        Console.WriteLine("in data loader");
-                        return await r.GetPeopleIndex();
+                        await Task.Delay(1);
+                        return people;
                     });
 
                     // Start async tasks to load by ID
-                    var tasks = context.Source.Characters.Select(x => loader.LoadAsync(x));
+                    var tasks = context.Source.Characters.Select(x => loader.LoadAsync(x)).ToArray();
 
                     // Dispatch loading
                     loader.Dispatch();
 
-                    Console.WriteLine("dispatched");
+                    await Task.WhenAll(tasks);
 
                     // Now await tasks
-                    foreach(var t in tasks)
+                    foreach (var t in tasks)
                     {
-                        bag.Add(await t);
-                        Console.WriteLine("add");
+                        bag.Add(t.Result);
+//                        Console.WriteLine($"---- {t.Result.Url}");
                     }
+
                 });
 
                 return bag.ToList();

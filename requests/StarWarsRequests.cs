@@ -20,8 +20,16 @@ namespace test.Requests
         private async Task<string> getUrl(string url) {
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Add("User-Agent", "graphql.net");
-            string res = await client.GetStringAsync(url);
-            return res;
+            try
+            {
+                string res = await client.GetStringAsync(url);
+                return res;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return null;
+            }
         }
 
         public async Task<Film> GetFilm(string id)
@@ -47,22 +55,19 @@ namespace test.Requests
             return tasks.Select(x => x.Result);
         }
 
-        public async Task<Dictionary<Tid, T>> GetIndex<Tid, T>(string type)
-        {
-            System.Console.WriteLine("hi I'm here");
-            string res = await getUrl($"https://swapi.co/api/{type}/");
-            var data = JObject.Parse(res);
-
-            System.Console.WriteLine(data["count"]);
-
-
-
-            return null;
-        }
-
         public async Task<Dictionary<string, Person>> GetPeopleIndex()
         {
-            return await GetIndex<string, Person>("people");
+            var d = new Dictionary<string, Person>();
+            var data = JObject.Parse(await getUrl($"https://swapi.co/api/people/"));
+            
+            var people = data["results"].Select(x => x.ToObject<Person>());
+            foreach (var person in people)
+            {
+                d[person.Url] = person;
+            }
+
+            return d;
         }
+
     }
 }
