@@ -39,10 +39,11 @@ namespace GraphQL.Types
                 // Run within an async context to make sure we won't deadlock
                 AsyncContext.Run(async () =>
                 {
-                    var loader = new BatchDataLoader<string, Person>((urls, ct) =>
+                    var loader = new BatchDataLoader<string, Person>(async (urls, ct) =>
                     {
+                        Console.WriteLine(urls);
                         Console.WriteLine("in data loader");
-                        return r.GetPeopleIndex();
+                        return await r.GetPeopleIndex();
                     });
 
                     // Start async tasks to load by ID
