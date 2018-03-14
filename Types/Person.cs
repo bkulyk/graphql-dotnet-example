@@ -8,6 +8,7 @@ namespace GraphQL.Types
     {
         public PersonType()
         {
+            Name = "Person";
             Field(d => d.Name, nullable: true).Description("Title of the film");
             Field(d => d.Height, nullable: true).Description("Height of the persion");
             Field(d => d.Mass, nullable: true).Description("The person's phusical mass.");

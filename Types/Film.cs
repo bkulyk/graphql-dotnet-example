@@ -33,59 +33,36 @@ namespace GraphQL.Types
 
             Field(d => d.ReleaseDate, nullable: true).Description("Release date of the film");
 
-            Field<ListGraphType<PersonType>, IEnumerable<Person>>().Name("characters").ResolveAsync(async (context) => {
+            Field<ListGraphType<PersonType>, List<Person>>().Name("characters").Resolve((context) => {
+                var bag = new ConcurrentBag<Person>();
 
-                AsyncContext
-                var loader = new BatchDataLoader<string, Person>((urls, ct) => {
-                    Console.WriteLine("made it into data loader");
-                    return r.GetPeopleIndex(/* urls */);
-                });
-
-                var chars = new ConcurrentBag<Person>();
-                foreach (var url in context.Source.Characters)
+                // Run within an async context to make sure we won't deadlock
+                AsyncContext.Run(async () =>
                 {
-                    var person = await loader.LoadAsync(url);
-                    chars.Add(person);
-                }
-
-                loader.Dispatch();
-
-                return chars;
-
-                //var wedontknow = context.Source.Characters.Select(x => loader.LoadAsync(x).GetAwaiter().GetResult());
-
-                //return wedontknow;
-
-                /*var chars = new ConcurrentBag<Person>();
-                Parallel.ForEach(context.Source.Characters, async (url) =>
-                {
-                    chars.Add(await loader.LoadAsync(url));
-                });
-
-                return chars;
-                */
-            });
-
-            /*Field<ListGraphType<PersonType>>(
-                "characters",
-                resolve: (context) => {
-
-                    var loader = new BatchDataLoader<string, Person>((urls, ct) => {
-                        Console.WriteLine("made it into data loader");
-                        return r.GetPeopleIndex();
-                    } );
-
-                    var chars = new ConcurrentBag<Person>();
-                    Parallel.ForEach(context.Source.Characters, async (url) => 
+                    var loader = new BatchDataLoader<string, Person>((urls, ct) =>
                     {
-                        chars.Add(await loader.LoadAsync(url));
+                        Console.WriteLine("in data loader");
+                        return r.GetPeopleIndex();
                     });
 
-                    return chars;
+                    // Start async tasks to load by ID
+                    var tasks = context.Source.Characters.Select(x => loader.LoadAsync(x));
 
-                    //return context.Source.Characters.Select(async url => await loader.LoadAsync(url));
-                }
-            );*/
+                    // Dispatch loading
+                    loader.Dispatch();
+
+                    Console.WriteLine("dispatched");
+
+                    // Now await tasks
+                    foreach(var t in tasks)
+                    {
+                        bag.Add(await t);
+                        Console.WriteLine("add");
+                    }
+                });
+
+                return bag.ToList();
+            });
         }
     }
 }
