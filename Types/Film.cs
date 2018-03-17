@@ -33,37 +33,17 @@ namespace GraphQL.Types
 
             Field(d => d.ReleaseDate, nullable: true).Description("Release date of the film");
 
-            Field<ListGraphType<PersonType>, List<Person>>().Name("characters").ResolveAsync(async (context) => {
-                var bag = new ConcurrentBag<Person>();
-                var people = await r.GetPeopleIndex();
+            Field<ListGraphType<PersonType>, Person[]>().Name("characters").ResolveAsync(async (context) => {
+                var loader = new BatchDataLoader<string, Person>(async (urls, ct) => await r.GetPeopleIndex(urls));
 
-                // Run within an async context to make sure we won't deadlock
-                AsyncContext.Run(async () =>
-                {
-                    var loader = new BatchDataLoader<string, Person>(async (urls, ct) =>
-                    {
-                        await Task.Delay(1);
-                        return people;
-                    });
+                // Start async tasks to load by ID
+                var tasks = context.Source.Characters.Select(x => loader.LoadAsync(x)).ToArray();
 
-                    // Start async tasks to load by ID
-                    var tasks = context.Source.Characters.Select(x => loader.LoadAsync(x)).ToArray();
+                // Dispatch loading
+                loader.Dispatch();
 
-                    // Dispatch loading
-                    loader.Dispatch();
-
-                    await Task.WhenAll(tasks);
-
-                    // Now await tasks
-                    foreach (var t in tasks)
-                    {
-                        bag.Add(t.Result);
-//                        Console.WriteLine($"---- {t.Result.Url}");
-                    }
-
-                });
-
-                return bag.ToList();
+                var people = await Task.WhenAll(tasks).ContinueWith(x => x.Result);
+                return people.Where(x => x != null).ToArray();
             });
         }
     }
