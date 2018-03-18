@@ -57,17 +57,9 @@ namespace test.Requests
 
         public async Task<Dictionary<string, Person>> GetPeopleIndex(IEnumerable<String> urls)
         {
-            var d = new Dictionary<string, Person>();
             var data = JObject.Parse(await getUrl($"https://swapi.co/api/people/"));
-
             var people = data["results"].Select(x => x.ToObject<Person>());
-           
-            foreach (var person in people)
-            {
-                d[person.Url] = person;
-            }
-
-            return d;
+            return people.ToDictionary(x => x.Url);
         }
 
     }
